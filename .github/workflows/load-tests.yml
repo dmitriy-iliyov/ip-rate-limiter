@@ -41,7 +41,7 @@ jobs:
         run: |
           echo "Waiting for application to start..."
           for i in {1..30}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health || true)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/test-ip-rate-limiter/guarded || true)
             # 200 = ok, 401/403 = Spring Security ответил → приложение живо
             if [[ "$STATUS" =~ ^(200|401|403)$ ]]; then
               echo "Application is up (HTTP $STATUS)"
