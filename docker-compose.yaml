@@ -8,6 +8,9 @@ services:
       - rate-limiter-redis
     networks:
       - default
+    environment:
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
     ports:
       - "8080:8080"
 

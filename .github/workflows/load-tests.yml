@@ -11,14 +11,18 @@ jobs:
   load-test:
     runs-on: ubuntu-latest
 
+    env:
+      REDIS_HOST: rate-limiter-redis
+      REDIS_PORT: 6379
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: "21"
+          distribution: "temurin"
 
       - name: Cache Maven
         uses: actions/cache@v3
@@ -42,9 +46,8 @@ jobs:
           echo "Waiting for application to start..."
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/test-ip-rate-limiter/guarded || true)
-            # 200 = ok, 401/403 = Spring Security ответил → приложение живо
             if [[ "$STATUS" =~ ^(200|401|403)$ ]]; then
-              echo "Application is up (HTTP $STATUS)"
+              echo "App is up ($STATUS)"
               exit 0
             fi
             echo "Attempt $i/30: HTTP $STATUS — retrying in 2s..."
