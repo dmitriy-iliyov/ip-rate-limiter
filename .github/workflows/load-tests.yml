@@ -57,8 +57,9 @@ jobs:
           docker compose logs
           exit 1
 
-      - name: Run Gatling load tests
-        run: mvn gatling:test -pl load-tests
+      - name: Run Gatling
+        run: mvn gatling:test
+        working-directory: load-tests
 
       - name: Upload Gatling reports
         if: always()
