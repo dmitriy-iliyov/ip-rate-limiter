@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RateLimitFilterUT {
+class RateLimitFilterUnitTest {
 
     @Mock
     ObjectMapper mapper;
