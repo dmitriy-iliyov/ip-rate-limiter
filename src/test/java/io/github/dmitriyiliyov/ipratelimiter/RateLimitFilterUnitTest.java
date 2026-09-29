@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -71,6 +72,21 @@ class RateLimitFilterUnitTest {
     }
 
     @Test
+    @DisplayName("UT constructor when two repositories have the same targetUrl, should throw IllegalArgumentException")
+    void constructor_whenRepositoriesHaveSameTargetUrl_shouldThrowIllegalArgumentException(@Mock RateLimitRepository another) {
+        // given
+        when(another.getTargetUrl()).thenReturn(targetUrl);
+
+        // when & then
+        assertThatThrownBy(() -> new RateLimitFilter(mapper, List.of(repository, another)) {
+            @Override
+            protected String extractIp(HttpServletRequest request) {
+                return ip;
+            }
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     @DisplayName("UT doFilterInternal() when URI not in repositories map, should pass to filterChain")
     void doFilterInternal_whenUriNotInRepositoriesMap_shouldPassToFilterChain() throws ServletException, IOException {
         // given
@@ -121,6 +137,7 @@ class RateLimitFilterUnitTest {
         verify(repository, times(1)).getTargetUrl();
         verify(repository, times(1)).increment(ip);
         verify(response, times(1)).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+        verify(response, times(1)).setContentType(MediaType.APPLICATION_JSON_VALUE);
         verify(writer, times(1)).write(expectedJson);
         verifyNoMoreInteractions(repository);
         verifyNoInteractions(filterChain);

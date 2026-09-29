@@ -6,10 +6,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,11 @@ public abstract class RateLimitFilter extends OncePerRequestFilter {
         Objects.requireNonNull(repositories, "repositories cannot be null");
         this.mapper = mapper;
         this.repositoriesMap = new HashMap<>();
-        repositories.forEach(repository -> repositoriesMap.put(repository.getTargetUrl(), repository));
+        repositories.forEach(repository -> {
+            if (repositoriesMap.putIfAbsent(repository.getTargetUrl(), repository) != null) {
+                throw new IllegalArgumentException("Duplicate rate limit repository for target url: " + repository.getTargetUrl());
+            }
+        });
     }
 
     @Override
@@ -48,6 +54,8 @@ public abstract class RateLimitFilter extends OncePerRequestFilter {
 
     protected void handleBlocked(HttpServletResponse response) throws IOException {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.getWriter().write(mapper.writeValueAsString(Map.of("message", "Too many requests, try later.")));
     }
 }

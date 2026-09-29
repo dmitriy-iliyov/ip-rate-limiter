@@ -1,6 +1,5 @@
 package io.github.dmitriyiliyov.ipratelimiter;
 
-import io.lettuce.core.RedisException;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -61,12 +60,6 @@ public class RedisRateLimitRepository implements RateLimitRepository {
                     String.valueOf(maxAttemptCount)
             );
             return RateLimitStatus.fromBoolean(result);
-        } catch (RedisException e) {
-            log.error("Redis exception when incrementing limit", e);
-            if (e.getMessage() != null && e.getMessage().contains("NOSCRIPT")) {
-                log.warn("Script wasn't load, exception contains NOSCRIPT");
-            }
-            throw e;
         } catch (Exception e) {
             log.error("Error when incrementing limit", e);
             throw e;
